@@ -1,11 +1,16 @@
+using System.Diagnostics;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using Debug = UnityEngine.Debug;
 
 namespace FPSController {
 
     public class InputManager : MonoBehaviour {
 
-        // Playercontrols is the generated script, being used manually
+        // Playercontrols is the generated script, being used manually. 
+        // We dont use this here, as we are using the higher level abstration:
+        // PlayerInput. Instantiating it ourselves would give us better
+        // control however.
         private PlayerControls playerControls;
         
         // Player input is the interface from unity to access the PlayerControls object
@@ -21,26 +26,39 @@ namespace FPSController {
         public bool jump;
         [HideInInspector]
         public bool sprint;
+        [HideInInspector]
+        public bool activate;
 
         private void Awake() {
-            playerControls = new PlayerControls();
+            // playerControls = new PlayerControls();   
             _playerInput = GetComponent<PlayerInput>();
         }
 
         private void OnEnable() {
-            playerControls.Enable();
+            // playerControls.Enable();
         }
 
         private void OnDisable() {
-            playerControls.Disable();
+            // playerControls.Disable();
         }
         
         public void OnLook(InputValue value) {
             look = value.Get<Vector2>();
         }
         
+        public void OnLook(InputAction.CallbackContext context) {
+            look = context.ReadValue<Vector2>();
+            // Debug.Log($"lookvalue: {look}");
+        }
+        
         public void OnMovement(InputValue value) {
             move = value.Get<Vector2>();
+            // Debug.Log("send messages");
+        }
+        
+        public void OnMovement(InputAction.CallbackContext context) {
+            move = context.ReadValue<Vector2>();
+            // Debug.Log("unity events");
         }
         
         public void OnJump(InputValue value)
@@ -48,10 +66,25 @@ namespace FPSController {
             jump = value.isPressed;
         }
         
-        public void OnActivate(InputValue value)
-        {
-            // Do something
+        public void OnJump(InputAction.CallbackContext context) {
+            jump = true;
         }
+        
+        // public void OnActivate(InputAction.CallbackContext context)
+        // {
+        //     // activate = value.isPressed;
+        //     switch (context.phase) {
+        //         case InputActionPhase.Started:
+        //             activate = true;
+        //             break;
+        //         case InputActionPhase.Canceled:
+        //             activate = false;
+        //             break;
+        //         case InputActionPhase.Performed:
+        //             activate = false;
+        //             break;
+        //     }
+        // }
         
         public void OnSprint(InputValue value)
         {

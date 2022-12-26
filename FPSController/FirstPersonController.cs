@@ -121,7 +121,7 @@ namespace FPSController {
             GroundedCheck();
             Move();
         }
-
+        
         private void Move() {
             // set target speed based on move speed, sprint speed and if sprint is pressed
             float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
@@ -244,6 +244,7 @@ namespace FPSController {
                 transform.position.z);
             // Checks if any layers in GroundLayers is contained within the sphere, if it is then we are on the
             // ground.
+            // TODO bug in unity controller, sphere means you can be standing in mid air, slightly off the edge, and be grounded
             Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers,
                 QueryTriggerInteraction.Ignore);
         }
@@ -281,6 +282,8 @@ namespace FPSController {
                 }
 
                 // if we are not grounded, do not jump
+                // TODO Modifying the jump input in controller, bad 
+                // practice. The input should set itself back to false.
                 _input.jump = false;
             }
 

@@ -188,6 +188,17 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""name"": """",
                     ""id"": ""14808c86-3ab8-4523-a1ae-4afd76335a8b"",
                     ""path"": ""<Keyboard>/e"",
+                    ""interactions"": ""Tap(duration=1)"",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Activate"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""4956d03d-2021-4fa2-8f92-0e71ad428de0"",
+                    ""path"": ""<DualShockGamepad>/buttonSouth"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
