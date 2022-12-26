@@ -1,8 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using FPSController;
-using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -24,9 +20,9 @@ public class Selector : MonoBehaviour {
     private ISelectable target;
 
     private void Start() {
-        // Since we are using the PlayerInput class, so we have(source required) to use
-        // this string based way to get an action from it. We could avoid this
-        // by instantiating the PlayerControls InputActions class ourselves.
+        // Since we are using the PlayerInput class, so we have to (not really but its simpler) 
+        // use this string based way to get an action from it. We could avoid this by
+        // instantiating the PlayerControls InputActions class ourselves.
         ActivateAction = _playerInput.actions.FindAction("Activate");
         ActivateAction.started += Activate;
         
