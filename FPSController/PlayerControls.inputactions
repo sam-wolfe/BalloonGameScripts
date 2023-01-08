@@ -185,6 +185,34 @@
                     "isPartOfComposite": false
                 }
             ]
+        },
+        {
+            "name": "Ship",
+            "id": "3a4dd496-d828-4a3a-80bb-7c1425dc69c3",
+            "actions": [
+                {
+                    "name": "DootDoot",
+                    "type": "Button",
+                    "id": "f73e09c5-1cbe-4cfc-9445-2d534056bafc",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "0b17a144-cdef-4f67-87bf-521ac7892a0e",
+                    "path": "<Keyboard>/slash",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "DootDoot",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
         }
     ],
     "controlSchemes": []

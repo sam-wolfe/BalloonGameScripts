@@ -207,6 +207,34 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
                     ""isPartOfComposite"": false
                 }
             ]
+        },
+        {
+            ""name"": ""Ship"",
+            ""id"": ""3a4dd496-d828-4a3a-80bb-7c1425dc69c3"",
+            ""actions"": [
+                {
+                    ""name"": ""DootDoot"",
+                    ""type"": ""Button"",
+                    ""id"": ""f73e09c5-1cbe-4cfc-9445-2d534056bafc"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                }
+            ],
+            ""bindings"": [
+                {
+                    ""name"": """",
+                    ""id"": ""0b17a144-cdef-4f67-87bf-521ac7892a0e"",
+                    ""path"": ""<Keyboard>/slash"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""DootDoot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                }
+            ]
         }
     ],
     ""controlSchemes"": []
@@ -218,6 +246,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         m_Player_Look = m_Player.FindAction("Look", throwIfNotFound: true);
         m_Player_Sprint = m_Player.FindAction("Sprint", throwIfNotFound: true);
         m_Player_Activate = m_Player.FindAction("Activate", throwIfNotFound: true);
+        // Ship
+        m_Ship = asset.FindActionMap("Ship", throwIfNotFound: true);
+        m_Ship_DootDoot = m_Ship.FindAction("DootDoot", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -338,6 +369,39 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         }
     }
     public PlayerActions @Player => new PlayerActions(this);
+
+    // Ship
+    private readonly InputActionMap m_Ship;
+    private IShipActions m_ShipActionsCallbackInterface;
+    private readonly InputAction m_Ship_DootDoot;
+    public struct ShipActions
+    {
+        private @PlayerControls m_Wrapper;
+        public ShipActions(@PlayerControls wrapper) { m_Wrapper = wrapper; }
+        public InputAction @DootDoot => m_Wrapper.m_Ship_DootDoot;
+        public InputActionMap Get() { return m_Wrapper.m_Ship; }
+        public void Enable() { Get().Enable(); }
+        public void Disable() { Get().Disable(); }
+        public bool enabled => Get().enabled;
+        public static implicit operator InputActionMap(ShipActions set) { return set.Get(); }
+        public void SetCallbacks(IShipActions instance)
+        {
+            if (m_Wrapper.m_ShipActionsCallbackInterface != null)
+            {
+                @DootDoot.started -= m_Wrapper.m_ShipActionsCallbackInterface.OnDootDoot;
+                @DootDoot.performed -= m_Wrapper.m_ShipActionsCallbackInterface.OnDootDoot;
+                @DootDoot.canceled -= m_Wrapper.m_ShipActionsCallbackInterface.OnDootDoot;
+            }
+            m_Wrapper.m_ShipActionsCallbackInterface = instance;
+            if (instance != null)
+            {
+                @DootDoot.started += instance.OnDootDoot;
+                @DootDoot.performed += instance.OnDootDoot;
+                @DootDoot.canceled += instance.OnDootDoot;
+            }
+        }
+    }
+    public ShipActions @Ship => new ShipActions(this);
     public interface IPlayerActions
     {
         void OnMovement(InputAction.CallbackContext context);
@@ -345,5 +409,9 @@ public partial class @PlayerControls : IInputActionCollection2, IDisposable
         void OnLook(InputAction.CallbackContext context);
         void OnSprint(InputAction.CallbackContext context);
         void OnActivate(InputAction.CallbackContext context);
+    }
+    public interface IShipActions
+    {
+        void OnDootDoot(InputAction.CallbackContext context);
     }
 }

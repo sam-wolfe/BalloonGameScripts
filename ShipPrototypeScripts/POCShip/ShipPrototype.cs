@@ -1,9 +1,4 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class ShipPrototype : MonoBehaviour {
 
@@ -74,8 +69,8 @@ public class ShipPrototype : MonoBehaviour {
 
         var _tp = transform.position;
 
-        var only_one = Mathf.Sin(timePassed);
-        var newPos = originalPosition.z + (only_one*speed);
+        var sin_wave = Mathf.Sin(timePassed);
+        var newPos = originalPosition.z + (sin_wave*speed);
 
         transform.position = 
             // new Vector3((Mathf.Sin(timePassed)*distanceFactor)+_tp.x, _tp.y, _tp.z);
