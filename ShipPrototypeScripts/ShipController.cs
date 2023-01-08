@@ -7,21 +7,18 @@ using UnityEngine;
 public class ShipController : MonoBehaviour {
     
     [SerializeField]
-    private float speed = 20f;
+    private float speed = 10f;
 
     // TODO make interface that inputs share
     [SerializeField] private GamePadInputManager _input;
     
     private Vector2 move;
     private float altitude;
+    private float sails;
 
     private Rigidbody rb;
 
     private Vector3 targetAltitude;
-
-    [SerializeField]
-    // Test for gizmo, remove
-    private BoxCollider shipFloorCollider;
 
     private void Start() {
         rb = GetComponent<Rigidbody>();
@@ -31,27 +28,24 @@ public class ShipController : MonoBehaviour {
     void Update() {
         move = _input.move;
         altitude = _input.altitude;
+        sails = _input.sails;
     }
 
     private void FixedUpdate() {
         moveShipHorizonal();
         moveToTargetAltitude();
+        rotateSails();
         updateTargetAltitue();
     }
 
-    // TODO change this to handle vertical motion, diff method for hor
     private void moveShipHorizonal() {
-        Vector3 m_Input = new Vector3(move.x, 0, move.y);
-        
-        // var new_pos = transform.position + (m_Input * speed * Time.deltaTime);
+        Vector3 forwardForce = transform.forward * move.y;
+        Vector3 sideForce = transform.right * move.x;
 
-        rb.AddForce(m_Input * speed, ForceMode.Force);
+        Vector3 direction = forwardForce + sideForce;
         
-        // NOTE: I think move position will be better for horizontal motion.
-        // Oh but maybe not, then we have to manually turn it off if we collide into
-        //  a cliff or something. But maybe that wont be so hard and will help prevent
-        //  a player getting stuck/gitching through a wall if force is continually
-        //  applied by addforce. Needs testing.
+        rb.AddForce(direction * speed, ForceMode.Force);
+        
     }
     
     private void moveToTargetAltitude() {
@@ -72,6 +66,11 @@ public class ShipController : MonoBehaviour {
         }
     }
 
+    private void rotateSails() {
+        // Multiplying by 40 as a hack because I thought turn was too low. //TODO make setting
+        rb.AddTorque(Vector3.up * (sails * 40 * speed * Time.deltaTime), ForceMode.Force);
+    }
+
     private void updateTargetAltitue() {
         var shipPosition = transform.position;
         var col = shipFloorCollider;
@@ -83,21 +82,40 @@ public class ShipController : MonoBehaviour {
             );
     }
     
+    
+    
+    //------------------------------------
+    // Gizmo stuff
+    //------------------------------------
+    
+    
+    
+    [SerializeField]
+    // Test for gizmo, remove
+    private BoxCollider shipFloorCollider;
+    [SerializeField]
+    // Test for gizmo, remove
+    private bool _gizmoEnabled = false;
+
     private void OnDrawGizmosSelected()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawSphere(targetAltitude, 1f);
+        if (_gizmoEnabled) {
+            Gizmos.color = Color.red;
+            Gizmos.DrawSphere(targetAltitude, 1f);    
+        }
     }
 
     private void setAltitudeGizmoInitialPos() {
-        var col = shipFloorCollider;
-        
-        Debug.Log(col.size.x);
-        Debug.Log(col.size.z);
-        
-        targetAltitude = new Vector3(
-            transform.position.x-col.size.x/2, 0, transform.position.z-col.size.z/2
-        );
+        if (_gizmoEnabled) {
+            var col = shipFloorCollider;
+
+            Debug.Log(col.size.x);
+            Debug.Log(col.size.z);
+
+            targetAltitude = new Vector3(
+                transform.position.x - col.size.x / 2, 0, transform.position.z - col.size.z / 2
+            );
+        }
     }
 
 }
