@@ -1,16 +1,40 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Cinemachine;
 using Unity.VisualScripting;
 using UnityEngine;
 
 public class ShipController : MonoBehaviour {
     
+    // ------------------------------------------------
+    // Notes:
+    //  Drag is currently set to 1 for drag and angular
+    //  drag, so when moving to a new scene dont forget
+    //  to update those in the inspector if they aren't
+    //  a parameter here.
+    //
+    // ------------------------------------------------
+    
+    [Header("Movement Settings")]
     [SerializeField]
     private float speed = 10f;
+    [SerializeField]
+    [Tooltip("How fast the ship can change altitude, normally.")]
+    private float maxSpeed = 40f;
+    private float minSpeed = 40f;
+    [Tooltip("Add extra delay to simulate inertia, without changing mass of the ship.")]
+    private float inertialDelay = 5f;
+    
+    [Header("Input")]
 
     // TODO make interface that inputs share
     [SerializeField] private GamePadInputManager _input;
+
+    [Header("Configuration")]
+    
+    [SerializeField]
+    public BoxCollider shipFloor;
     
     private Vector2 move;
     private float altitude;
@@ -18,11 +42,11 @@ public class ShipController : MonoBehaviour {
 
     private Rigidbody rb;
 
-    private Vector3 targetAltitude;
+    public Vector3 targetAltitude { get; private set; }
 
     private void Start() {
         rb = GetComponent<Rigidbody>();
-        setAltitudeGizmoInitialPos();
+        // setAltitudeGizmoInitialPos();
     }
 
     void Update() {
@@ -58,12 +82,30 @@ public class ShipController : MonoBehaviour {
         var distanceToTarget = targetAltitudeY - heightVector;
 
         // Debug.Log(distanceToTarget);
-
-        if (distanceToTarget.y > 0) {
-            var newPos = distanceToTarget * (speed * Time.deltaTime);
         
-            rb.AddForce(newPos * speed, ForceMode.Force);
-        }
+        // Problem is that it is riding low when more mass added instead of slowly rising to target
+        // or slowly falling to the ground is because I am trying to curve velocity with relative
+        // distance to the target already, AND I am trying to add curves with math.
+
+        // if (distanceToTarget.y > 0) {
+            // TODO This is the not fixed code, has its charm, but not what I am going for.
+            var newPos = distanceToTarget * speed;
+            
+            // TODO this is the fixed code
+            // var newPos = Vector3.up * speed;
+
+            Debug.Log(newPos.y);
+
+
+            var localMin = float.MinValue;
+            
+            if (newPos.y < 0) localMin = -5f;
+            
+            // Limit ascent speed
+            newPos.y = Mathf.Clamp(newPos.y, localMin, maxSpeed);
+
+            rb.AddForce(newPos, ForceMode.Force);
+        // }
     }
 
     private void rotateSails() {
@@ -73,12 +115,12 @@ public class ShipController : MonoBehaviour {
 
     private void updateTargetAltitue() {
         var shipPosition = transform.position;
-        var col = shipFloorCollider;
+        var col = shipFloor;
         
         targetAltitude = new Vector3(
-                shipPosition.x-col.size.x/2, 
+                shipPosition.x, 
                 targetAltitude.y + (altitude * speed * Time.deltaTime), 
-                shipPosition.z-col.size.z/2
+                shipPosition.z
             );
     }
     
@@ -89,33 +131,33 @@ public class ShipController : MonoBehaviour {
     //------------------------------------
     
     
-    
-    [SerializeField]
-    // Test for gizmo, remove
-    private BoxCollider shipFloorCollider;
-    [SerializeField]
-    // Test for gizmo, remove
-    private bool _gizmoEnabled = false;
-
-    private void OnDrawGizmosSelected()
-    {
-        if (_gizmoEnabled) {
-            Gizmos.color = Color.red;
-            Gizmos.DrawSphere(targetAltitude, 1f);    
-        }
-    }
-
-    private void setAltitudeGizmoInitialPos() {
-        if (_gizmoEnabled) {
-            var col = shipFloorCollider;
-
-            Debug.Log(col.size.x);
-            Debug.Log(col.size.z);
-
-            targetAltitude = new Vector3(
-                transform.position.x - col.size.x / 2, 0, transform.position.z - col.size.z / 2
-            );
-        }
-    }
+    // [Header("Dev")]
+    // [SerializeField]
+    // // Test for gizmo, remove
+    // private BoxCollider shipFloorCollider;
+    // [SerializeField]
+    // // Test for gizmo, remove
+    // private bool _gizmoEnabled = false;
+    //
+    // private void OnDrawGizmos()
+    // {
+    //     if (_gizmoEnabled) {
+    //         Gizmos.color = Color.red;
+    //         Gizmos.DrawSphere(targetAltitude, 1f);    
+    //     }
+    // }
+    //
+    // private void setAltitudeGizmoInitialPos() {
+    //     if (_gizmoEnabled) {
+    //         var col = shipFloorCollider;
+    //
+    //         Debug.Log(col.size.x);
+    //         Debug.Log(col.size.z);
+    //
+    //         targetAltitude = new Vector3(
+    //             transform.position.x - col.size.x / 2, 0, transform.position.z - col.size.z / 2
+    //         );
+    //     }
+    // }
 
 }
