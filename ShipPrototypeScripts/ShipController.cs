@@ -18,7 +18,7 @@ public class ShipController : MonoBehaviour {
     
     [Header("Movement Settings")]
     [SerializeField]
-    private float speed = 10f;
+    private float speedFactor = 10f;
     [SerializeField]
     [Tooltip("How fast the ship can change altitude, normally.")]
     private float maxSpeed = 40f;
@@ -30,12 +30,14 @@ public class ShipController : MonoBehaviour {
 
     // TODO make interface that inputs share
     [SerializeField] private GamePadInputManager _input;
+    
+        
+    [Header("Input")]
+    [SerializeField] private float devTargetAltitudeSpeed = 5f;
+    
+    
+    // ########################################
 
-    [Header("Configuration")]
-    
-    [SerializeField]
-    public BoxCollider shipFloor;
-    
     private Vector2 move;
     private float altitude;
     private float sails;
@@ -58,6 +60,7 @@ public class ShipController : MonoBehaviour {
     private void FixedUpdate() {
         moveShipHorizonal();
         moveToTargetAltitude();
+        applyTargetTorque();
         rotateSails();
         updateTargetAltitue();
     }
@@ -68,11 +71,18 @@ public class ShipController : MonoBehaviour {
 
         Vector3 direction = forwardForce + sideForce;
         
-        rb.AddForce(direction * speed, ForceMode.Force);
+        rb.AddForce(direction * speedFactor, ForceMode.Force);
         
     }
-    
+
+    private void applyTargetTorque() {
+        
+    }
+
     private void moveToTargetAltitude() {
+        // TODO need to improve to make a true PID controller
+        // TODO need to add behaviour to move the target altitude
+        // TODO  slowly, accellerating over time
 
         // We only want the difference in altitute between target and 
         // current position, so zero out the other axis's (axees? axies?)
@@ -83,43 +93,51 @@ public class ShipController : MonoBehaviour {
 
         // Debug.Log(distanceToTarget);
         
-        // Problem is that it is riding low when more mass added instead of slowly rising to target
-        // or slowly falling to the ground is because I am trying to curve velocity with relative
-        // distance to the target already, AND I am trying to add curves with math.
+        // NOTE PRESERVED FOR POSTERITY:
+        // Problem is that it is riding low when more mass added instead of
+        // slowly rising to target or slowly falling to the ground is because
+        // I am trying to curve velocity with relative distance to the target
+        // already, AND I am trying to add curves with math.
+        // -----------------------------------------------------
+        
+        // Note above talks about "problem" but actually its not a problem as much as
+        // an incomplete soltion. It amounts to the pterm of a pid controller without
+        // the dterm, to account for the momentum after reaching the desired target.
 
-        // if (distanceToTarget.y > 0) {
-            // TODO This is the not fixed code, has its charm, but not what I am going for.
-            var newPos = distanceToTarget * speed;
+        if (distanceToTarget.y > 0) {
+            // P-Term
+            var newPos = distanceToTarget * speedFactor;
             
-            // TODO this is the fixed code
+            // Use this for constant force regardless of distance
             // var newPos = Vector3.up * speed;
+
+            // newPos.y *= distanceToTarget.normalized.y;
 
             Debug.Log(newPos.y);
 
 
             var localMin = float.MinValue;
             
-            if (newPos.y < 0) localMin = -5f;
+            // if (newPos.y < 0) localMin = -5f;
             
             // Limit ascent speed
             newPos.y = Mathf.Clamp(newPos.y, localMin, maxSpeed);
 
             rb.AddForce(newPos, ForceMode.Force);
-        // }
+        }
     }
 
     private void rotateSails() {
         // Multiplying by 40 as a hack because I thought turn was too low. //TODO make setting
-        rb.AddTorque(Vector3.up * (sails * 40 * speed * Time.deltaTime), ForceMode.Force);
+        rb.AddTorque(Vector3.up * (sails * 40 * speedFactor * Time.deltaTime), ForceMode.Force);
     }
 
     private void updateTargetAltitue() {
         var shipPosition = transform.position;
-        var col = shipFloor;
         
         targetAltitude = new Vector3(
                 shipPosition.x, 
-                targetAltitude.y + (altitude * speed * Time.deltaTime), 
+                targetAltitude.y + (altitude * devTargetAltitudeSpeed * Time.deltaTime), 
                 shipPosition.z
             );
     }
