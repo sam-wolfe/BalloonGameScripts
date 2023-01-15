@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
+using DefaultNamespace;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -31,9 +32,30 @@ public class ShipController : MonoBehaviour {
     // TODO make interface that inputs share
     [SerializeField] private GamePadInputManager _input;
     
+    [Space(10)]
+    [Header("Look Settings / Cinemachine")]
         
-    [Header("Input")]
+    [SerializeField]
+    [Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
+    private GameObject CinemachineCameraTarget;
+
+    [SerializeField] [Tooltip("Rotation speed of the character")]
+    private float RotationSpeed = 1.0f;
+
+    [SerializeField] [Tooltip("How far in degrees can you move the camera down")]
+    private float BottomClamp = 80.0f;
+
+    [SerializeField] [Tooltip("How far in degrees can you move the camera up")]
+    private float TopClamp = -70.0f;
+    
+        
+    [Header("Dev")]
     [SerializeField] private float devTargetAltitudeSpeed = 5f;
+    
+    // PID settings
+    [SerializeField] private float pTerm = 0f;
+    [SerializeField] private float iTerm = 0f;
+    [SerializeField] private float dTerm = 0f;
     
     
     // ########################################
@@ -46,15 +68,29 @@ public class ShipController : MonoBehaviour {
 
     public Vector3 targetAltitude { get; private set; }
 
+    private PIDController _pid = new PIDController();
+
     private void Start() {
         rb = GetComponent<Rigidbody>();
-        // setAltitudeGizmoInitialPos();
+        targetAltitude = transform.position;
+        
+        // Hide that mouse, nobody want to see that shit, put it away you nasty bitch
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     void Update() {
+
+        updatePIDSettings();
+        
         move = _input.move;
         altitude = _input.altitude;
         sails = _input.sails;
+    }
+
+    private void updatePIDSettings() {
+        _pid.proportionalGain = pTerm;
+        _pid.integralGain = iTerm;
+        _pid.derivitiveGain = dTerm;
     }
 
     private void FixedUpdate() {
@@ -80,51 +116,49 @@ public class ShipController : MonoBehaviour {
     }
 
     private void moveToTargetAltitude() {
-        // TODO need to improve to make a true PID controller
-        // TODO need to add behaviour to move the target altitude
-        // TODO  slowly, accellerating over time
 
         // We only want the difference in altitute between target and 
         // current position, so zero out the other axis's (axees? axies?)
-        var heightVector = new Vector3(0, transform.position.y, 0);
-        var targetAltitudeY = new Vector3(0, targetAltitude.y, 0);
+        float currentHeight = transform.position.y;
+        var targetHeight = targetAltitude.y;
 
-        var distanceToTarget = targetAltitudeY - heightVector;
+        var distanceToTarget = targetHeight - currentHeight;
 
-        // Debug.Log(distanceToTarget);
+
+        float input = _pid.Update(Time.deltaTime, currentHeight, targetHeight);
         
-        // NOTE PRESERVED FOR POSTERITY:
-        // Problem is that it is riding low when more mass added instead of
-        // slowly rising to target or slowly falling to the ground is because
-        // I am trying to curve velocity with relative distance to the target
-        // already, AND I am trying to add curves with math.
-        // -----------------------------------------------------
-        
-        // Note above talks about "problem" but actually its not a problem as much as
-        // an incomplete soltion. It amounts to the pterm of a pid controller without
-        // the dterm, to account for the momentum after reaching the desired target.
-
-        if (distanceToTarget.y > 0) {
+        if (input > 0) {
             // P-Term
-            var newPos = distanceToTarget * speedFactor;
+
+            Debug.Log(input);
+
             
-            // Use this for constant force regardless of distance
-            // var newPos = Vector3.up * speed;
-
-            // newPos.y *= distanceToTarget.normalized.y;
-
-            Debug.Log(newPos.y);
-
-
+            // Not related to base PID controller function, limits ascent speed
             var localMin = float.MinValue;
-            
-            // if (newPos.y < 0) localMin = -5f;
-            
-            // Limit ascent speed
-            newPos.y = Mathf.Clamp(newPos.y, localMin, maxSpeed);
+            Vector3 newThrust = new Vector3(0, Mathf.Clamp(input, localMin, maxSpeed), 0);
+            //------------------------------------------------------------
 
-            rb.AddForce(newPos, ForceMode.Force);
+            rb.AddForce(newThrust, ForceMode.Force);
         }
+        
+        // Original code below
+        
+        // if (distanceToTarget.y > 0) {
+        //     // P-Term
+        //     var newPos = distanceToTarget * speedFactor;
+        //     
+        //
+        //     Debug.Log(newPos.y);
+        //
+        //
+        //     
+        //     // Not related to base PID controller function, limits ascent speed
+        //     var localMin = float.MinValue;
+        //     newPos.y = Mathf.Clamp(newPos.y, localMin, maxSpeed);
+        //     //------------------------------------------------------------
+        //
+        //     rb.AddForce(newPos, ForceMode.Force);
+        // }
     }
 
     private void rotateSails() {
