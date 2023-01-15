@@ -31,11 +31,10 @@ public class PhysicsFPSController : MonoBehaviour
     }
 
     private void move() {
-        var move = _input.move;
-        
-        // TODO movePosition might actually work for the player. Need to test.
+        var move = _input.move * speed;
         var p = playerRB.gameObject.transform.position;
-        // playerRB.AddForce(new Vector3(move.x, 0, move.y) * speed);
-        playerRB.MovePosition(new Vector3(p.x+move.x, p.y, p.z+move.y)*speed);
+        
+        // TODO clean up
+        playerRB.MovePosition(new Vector3(p.x+move.x, p.y, p.z+move.y));
     } 
 }
