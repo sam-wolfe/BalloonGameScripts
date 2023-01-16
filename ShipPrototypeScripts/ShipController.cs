@@ -122,16 +122,10 @@ public class ShipController : MonoBehaviour {
         float currentHeight = transform.position.y;
         var targetHeight = targetAltitude.y;
 
-        var distanceToTarget = targetHeight - currentHeight;
-
 
         float input = _pid.Update(Time.deltaTime, currentHeight, targetHeight);
         
         if (input > 0) {
-            // P-Term
-
-            Debug.Log(input);
-
             
             // Not related to base PID controller function, limits ascent speed
             var localMin = float.MinValue;
@@ -140,25 +134,6 @@ public class ShipController : MonoBehaviour {
 
             rb.AddForce(newThrust, ForceMode.Force);
         }
-        
-        // Original code below
-        
-        // if (distanceToTarget.y > 0) {
-        //     // P-Term
-        //     var newPos = distanceToTarget * speedFactor;
-        //     
-        //
-        //     Debug.Log(newPos.y);
-        //
-        //
-        //     
-        //     // Not related to base PID controller function, limits ascent speed
-        //     var localMin = float.MinValue;
-        //     newPos.y = Mathf.Clamp(newPos.y, localMin, maxSpeed);
-        //     //------------------------------------------------------------
-        //
-        //     rb.AddForce(newPos, ForceMode.Force);
-        // }
     }
 
     private void rotateSails() {

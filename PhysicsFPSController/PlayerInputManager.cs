@@ -28,7 +28,14 @@ public class PlayerInputManager : PlayerControlInputManager {
     }
     
     public void OnJump(InputAction.CallbackContext context) {
-        jump = true;
+        switch (context.phase) {
+            case InputActionPhase.Started:
+                jump = true;
+                break;
+            case InputActionPhase.Canceled:
+                jump = false;
+                break;
+        }
     }
     
     public void OnSprint(InputAction.CallbackContext context) {
