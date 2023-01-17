@@ -52,6 +52,7 @@ public class PhysicsFPSController : MonoBehaviour
         ProcessMove();
         GroundedCheck();
         ProcessJump();
+        // TODO proces rotation when ship rotates
     }
     
     private void LateUpdate() {

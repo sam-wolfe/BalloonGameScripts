@@ -112,7 +112,7 @@ public class ShipController : MonoBehaviour {
     }
 
     private void applyTargetTorque() {
-        
+        // TODO make another pid to control torque
     }
 
     private void moveToTargetAltitude() {
