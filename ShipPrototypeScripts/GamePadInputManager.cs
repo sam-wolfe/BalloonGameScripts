@@ -13,18 +13,18 @@ public class GamePadInputManager : MonoBehaviour {
         float newAltitude = context.ReadValue<float>();
 
         altitude = newAltitude;
-        Debug.Log(altitude);
+        // Debug.Log(altitude);
     }
     
     public void OnMove(InputAction.CallbackContext context) {
         Vector2 newMovement = context.ReadValue<Vector2>();
 
         move = newMovement;
-        Debug.Log(move);
+        // Debug.Log(move);
     }
     
     public void OnSail(InputAction.CallbackContext context) {
         sails = context.ReadValue<float>();;
-        Debug.Log(sails);
+        // Debug.Log(sails);
     }
 }
