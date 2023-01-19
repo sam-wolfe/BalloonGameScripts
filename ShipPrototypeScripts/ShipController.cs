@@ -150,11 +150,11 @@ public class ShipController : MonoBehaviour {
 
     private void rotateSails() {
         // Multiplying by 40 as a hack because I thought turn was too low. //TODO make setting
-        // rb.AddTorque(Vector3.up * (sails * 40 * speedFactor * Time.deltaTime), ForceMode.Force);
+        rb.AddRelativeTorque(Vector3.up * (sails * 40 * speedFactor * Time.deltaTime), ForceMode.Force);
         
-        Quaternion deltaRotation = Quaternion.Euler(Vector3.up * (sails * 40 * Time.deltaTime));
-        rb.MoveRotation(rb.rotation * deltaRotation);
-        // TODO try moveRotation
+        // Quaternion deltaRotation = Quaternion.Euler(Vector3.up * (sails * 40 * Time.deltaTime));
+        // rb.MoveRotation(rb.rotation * deltaRotation);
+        // // TODO try moveRotation
     }
 
     private void keepUpright() {
