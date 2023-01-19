@@ -24,8 +24,9 @@ public class ShipController : MonoBehaviour {
     [Tooltip("How fast the ship can change altitude, normally.")]
     private float maxSpeed = 40f;
     private float minSpeed = 40f;
-    [Tooltip("Add extra delay to simulate inertia, without changing mass of the ship.")]
-    private float inertialDelay = 5f;
+    [SerializeField]
+    [Tooltip("How fast the ship can change altitude, normally.")]
+    private float sailsSpeed = 40f;
     
     [Header("Input")]
 
@@ -69,6 +70,8 @@ public class ShipController : MonoBehaviour {
     public Vector3 targetAltitude { get; private set; }
 
     private PIDController _pid = new PIDController();
+    private PIDAngleController _Xpid = new PIDAngleController();
+    private PIDAngleController _Zpid = new PIDAngleController();
 
     private void Start() {
         rb = GetComponent<Rigidbody>();
@@ -91,6 +94,14 @@ public class ShipController : MonoBehaviour {
         _pid.proportionalGain = pTerm;
         _pid.integralGain = iTerm;
         _pid.derivitiveGain = dTerm;
+        
+        _Xpid.proportionalGain = pTerm;
+        _Xpid.integralGain = iTerm;
+        _Xpid.derivitiveGain = dTerm;
+        
+        _Zpid.proportionalGain = pTerm;
+        _Zpid.integralGain = iTerm;
+        _Zpid.derivitiveGain = dTerm;
     }
 
     private void FixedUpdate() {
@@ -99,6 +110,7 @@ public class ShipController : MonoBehaviour {
         applyTargetTorque();
         rotateSails();
         updateTargetAltitue();
+        // keepUpright();
     }
 
     private void moveShipHorizonal() {
@@ -138,7 +150,25 @@ public class ShipController : MonoBehaviour {
 
     private void rotateSails() {
         // Multiplying by 40 as a hack because I thought turn was too low. //TODO make setting
-        rb.AddTorque(Vector3.up * (sails * 40 * speedFactor * Time.deltaTime), ForceMode.Force);
+        // rb.AddTorque(Vector3.up * (sails * 40 * speedFactor * Time.deltaTime), ForceMode.Force);
+        
+        Quaternion deltaRotation = Quaternion.Euler(Vector3.up * (sails * 40 * Time.deltaTime));
+        rb.MoveRotation(rb.rotation * deltaRotation);
+        // TODO try moveRotation
+    }
+
+    private void keepUpright() {
+        float currentXrot = transform.eulerAngles.x;
+        float currentZrot = transform.eulerAngles.z;
+        var targetRot = 0f;
+
+
+        float inputX = _Xpid.UpdateAngle(Time.deltaTime, currentXrot, 0f);
+        float inputZ = _Zpid.UpdateAngle(Time.deltaTime, currentZrot, 0f);
+        
+        rb.AddTorque(transform.forward * (10 * inputX * Time.deltaTime), ForceMode.Force);
+        rb.AddTorque(transform.up * (10 * inputZ * Time.deltaTime), ForceMode.Force);
+        
     }
 
     private void updateTargetAltitue() {
@@ -150,9 +180,9 @@ public class ShipController : MonoBehaviour {
                 shipPosition.z
             );
     }
-    
-    
-    
+
+
+
     //------------------------------------
     // Gizmo stuff
     //------------------------------------

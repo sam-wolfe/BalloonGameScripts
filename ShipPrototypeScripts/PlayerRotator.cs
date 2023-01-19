@@ -23,7 +23,10 @@ public class PlayerRotator : MonoBehaviour {
             
             // Get angle between ship.forward last frame and ship.forward this frame
             // This is the delta
-            _angle = Vector3.Angle(_lastForward, _ship.forward);
+            _angle = Vector3.SignedAngle(_lastForward, _ship.forward, Vector3.up);
+            
+            Debug.Log(_angle);
+
 
             // apply delta to player
             var pa = _playerRb.rotation.eulerAngles;
@@ -32,7 +35,7 @@ public class PlayerRotator : MonoBehaviour {
                                                   pa.z
             );
 
-            Debug.Log("Running rotation");
+            // Debug.Log("Running rotation");
             
             // Save forward from this frame to read next frame
             _lastForward = _ship.forward;
