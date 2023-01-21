@@ -218,3 +218,22 @@ public class ShipController : MonoBehaviour {
     // }
 
 }
+
+
+public class RotationInterpolation : MonoBehaviour
+{
+    public Quaternion ShortestRotation(Quaternion targetRotation, Quaternion currentRotation)
+    {
+        Quaternion rotationDifference = Quaternion.Inverse(currentRotation) * targetRotation;
+        float angle;
+        Vector3 axis;
+        rotationDifference.ToAngleAxis(out angle, out axis);
+
+        if (angle > 180)
+        {
+            angle -= 360;
+        }
+
+        return Quaternion.AngleAxis(angle, axis);
+    }
+}
