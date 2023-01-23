@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Cinemachine;
 using DefaultNamespace;
+using Unity.Mathematics;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -111,6 +112,9 @@ public class ShipController : MonoBehaviour {
         rotateSails();
         updateTargetAltitue();
         // keepUpright();
+        // UpdateUprightForce();
+        NewUpdateUprightForce();
+        // Debug.Log(transform.forward);
     }
 
     private void moveShipHorizonal() {
@@ -150,7 +154,7 @@ public class ShipController : MonoBehaviour {
 
     private void rotateSails() {
         // Multiplying by 40 as a hack because I thought turn was too low. //TODO make setting
-        rb.AddRelativeTorque(Vector3.up * (sails * 40 * speedFactor * Time.deltaTime), ForceMode.Force);
+        rb.AddTorque(Vector3.up * (sails * 40 * speedFactor * Time.deltaTime), ForceMode.Force);
         
         // Quaternion deltaRotation = Quaternion.Euler(Vector3.up * (sails * 40 * Time.deltaTime));
         // rb.MoveRotation(rb.rotation * deltaRotation);
@@ -216,6 +220,84 @@ public class ShipController : MonoBehaviour {
     //         );
     //     }
     // }
+    
+    
+    [SerializeField] private float _uprightStrength = 10f;
+    [SerializeField] private float _uprightStrengthDamper = 0.5f;
+    public Quaternion ValetShortestRotation(Quaternion currentRotation) {
+        Vector3 targetRotVec = new Vector3(transform.forward.x, 0f, transform.forward.z);
+        var targetRotation = Quaternion.LookRotation(targetRotVec, Vector3.up);
+        
+        float angle = Quaternion.Angle(currentRotation, targetRotation);
+        if (angle > 180f) {
+            Debug.Log("Overlimit");
+            targetRotation = Quaternion.Inverse(targetRotation);
+        }
+        Quaternion toGoal = Quaternion.Inverse(currentRotation) * targetRotation;
+        
+        // return Quaternion.Inverse(currentRotation) * targetRotation;
+        return toGoal;
+    }
+
+    private Quaternion ShortestRotation(Quaternion to, Quaternion from) {
+        if (Quaternion.Dot(to, from) < 0) {
+            return to * Quaternion.Inverse(Multiply(from, -1));
+        }
+        else {
+            return to * Quaternion.Inverse(from);
+        }
+    }
+    
+    private Quaternion Multiply(Quaternion input, float scalar)
+    {
+        return new Quaternion(input.x * scalar, input.y * scalar, input.z * scalar, input.w * scalar);
+    }
+
+    public void NewUpdateUprightForce() {
+        Quaternion currentRotation = transform.rotation;
+        Vector3 targetRotVec = new Vector3(transform.forward.x, 0f, transform.forward.z);
+        Quaternion targetRotation = Quaternion.LookRotation(targetRotVec, Vector3.up);
+        Quaternion toGoal = ShortestRotation(targetRotation, currentRotation);
+        
+        float rotDegrees;
+        Vector3 rotAxis;
+        toGoal.ToAngleAxis(out rotDegrees, out rotAxis);
+        
+        rotAxis.Normalize();
+
+        float rotRadians = rotDegrees * Mathf.Deg2Rad;
+        
+        rb.AddTorque((rotAxis * (rotRadians * _uprightStrength))- (rb.angularVelocity * _uprightStrengthDamper));
+
+    }
+
+    public void UpdateUprightForce() {
+        Quaternion currentRotation = transform.rotation;
+        Quaternion toGoal = ValetShortestRotation(currentRotation);
+        
+        float rotDegrees;
+        Vector3 rotAxis;
+        toGoal.ToAngleAxis(out rotDegrees, out rotAxis);
+        
+        rotAxis.Normalize();
+        
+        if (rotDegrees > 180) {
+            rotDegrees -= 360;
+            rotAxis = -rotAxis;
+        }
+
+        float rotRadians = rotDegrees * Mathf.Deg2Rad;
+        
+        Debug.Log(rotAxis);
+        // Debug.Log((rotAxis * (rotRadians * _uprightStrength)) - (rb.angularVelocity * _uprightStrengthDamper));
+        try {
+            rb.AddTorque((rotAxis * (rotRadians * _uprightStrength)));
+
+        }
+        catch { }
+        // rb.AddTorque((rotAxis * (rotRadians * _uprightStrength)));
+        
+    }
 
 }
 
@@ -228,12 +310,31 @@ public class RotationInterpolation : MonoBehaviour
         float angle;
         Vector3 axis;
         rotationDifference.ToAngleAxis(out angle, out axis);
-
-        if (angle > 180)
-        {
+    
+        if (angle > 180) {
             angle -= 360;
         }
-
+    
         return Quaternion.AngleAxis(angle, axis);
+    }
+    
+    public Quaternion ValetShortestRotation(Quaternion targetRotation, Quaternion currentRotation)
+    {
+        return Quaternion.Inverse(currentRotation) * targetRotation;
+    }
+
+    public void UpdateUprightForce(float elapsed) {
+        Quaternion currentRotation = transform.rotation;
+        Quaternion toGoal = ValetShortestRotation(
+            Quaternion.LookRotation(transform.forward, transform.up), transform.rotation);
+        
+        float rotDegrees;
+        Vector3 rotAxis;
+        toGoal.ToAngleAxis(out rotDegrees, out rotAxis);
+        
+        // if (angle > 180) {
+        //     angle -= 360;
+        // }
+        
     }
 }

@@ -25,7 +25,7 @@ public class PlayerRotator : MonoBehaviour {
             // This is the delta
             _angle = Vector3.SignedAngle(_lastForward, _ship.forward, Vector3.up);
             
-            Debug.Log(_angle);
+            // Debug.Log(_angle);
 
 
             // apply delta to player
