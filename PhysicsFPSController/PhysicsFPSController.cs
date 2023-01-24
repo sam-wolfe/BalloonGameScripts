@@ -32,6 +32,14 @@ public class PhysicsFPSController : MonoBehaviour
     [Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
     private GameObject CinemachineCameraTarget;
     
+    [Header("Grounded Settings")] 
+    [SerializeField] [Tooltip("What layers count as 'Ground' to test if player can jump again.")]
+    private LayerMask _layerMask;
+    [SerializeField] [Tooltip("Height of the player to calculate how far to cast the ray down to test for ground.")]
+    private float _playerHeight;
+    private bool _isGrounded = false;
+    
+    
     // ---------------------------------------------------
     
     
@@ -59,18 +67,37 @@ public class PhysicsFPSController : MonoBehaviour
     }
 
     private void GroundedCheck() {
-        return;
+        RaycastHit hit;
+        // Does the ray intersect any objects excluding the player layer
+        // if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.forward), out hit, Mathf.Infinity, layerMask))
+        if (Physics.Raycast(transform.position, transform.TransformDirection(Vector3.down), out hit, _playerHeight, _layerMask))
+        {
+            Debug.DrawRay(transform.position, transform.TransformDirection(Vector3.down) * hit.distance, Color.yellow);
+            _isGrounded = true;
+        }
+        else {
+            _isGrounded = false;
+        }
     }
-    
-    // TODO improve jumping
-    private float timeSinceLastJump;
+
+    private void OnDrawGizmos() {
+        Gizmos.DrawLine(transform.position, Vector3.down);
+    }
+
+    private float _timeSinceLastJump;
 
     private void ProcessJump() {
-        timeSinceLastJump += Time.deltaTime;
-        if (_input.jump && timeSinceLastJump > 1.5f) {
-            timeSinceLastJump = 0;
+        // if (_input.jump && _isGrounded && timeSinceLastJump > 0.1f) {
+        //     timeSinceLastJump = 0;
+        //     playerRB.AddForce(Vector3.up * 5, ForceMode.Impulse);
+        // }
+        //
+        // timeSinceLastJump += Time.deltaTime;
+        
+        if (_input.jump && _isGrounded) {
             playerRB.AddForce(Vector3.up * 5, ForceMode.Impulse);
         }
+
     }
 
     private void ProcessMove() {
