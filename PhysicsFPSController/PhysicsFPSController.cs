@@ -10,6 +10,7 @@ public class PhysicsFPSController : MonoBehaviour
     [Header("Input Interface")] 
     [SerializeField] private PlayerControlInputManager _input;
 
+    // TODO realised why the input was different from the first one and went so fast, forgot to use deltatime :facepalm:
     [Header("Player Settings")] 
     [SerializeField] private float speed = 10;
     
@@ -81,19 +82,11 @@ public class PhysicsFPSController : MonoBehaviour
     }
 
     private void OnDrawGizmos() {
-        Gizmos.DrawLine(transform.position, Vector3.down);
     }
 
     private float _timeSinceLastJump;
 
     private void ProcessJump() {
-        // if (_input.jump && _isGrounded && timeSinceLastJump > 0.1f) {
-        //     timeSinceLastJump = 0;
-        //     playerRB.AddForce(Vector3.up * 5, ForceMode.Impulse);
-        // }
-        //
-        // timeSinceLastJump += Time.deltaTime;
-        
         if (_input.jump && _isGrounded) {
             playerRB.AddForce(Vector3.up * 5, ForceMode.Impulse);
         }

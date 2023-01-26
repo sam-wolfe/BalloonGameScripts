@@ -71,8 +71,7 @@ public class ShipController : MonoBehaviour {
     public Vector3 targetAltitude { get; private set; }
 
     private PIDController _pid = new PIDController();
-    private PIDAngleController _Xpid = new PIDAngleController();
-    private PIDAngleController _Zpid = new PIDAngleController();
+    private PIDAngleController _Ypid = new PIDAngleController();
 
     private void Start() {
         rb = GetComponent<Rigidbody>();
@@ -96,13 +95,10 @@ public class ShipController : MonoBehaviour {
         _pid.integralGain = iTerm;
         _pid.derivitiveGain = dTerm;
         
-        _Xpid.proportionalGain = pTerm;
-        _Xpid.integralGain = iTerm;
-        _Xpid.derivitiveGain = dTerm;
+        _Ypid.proportionalGain = pTerm;
+        _Ypid.integralGain = iTerm;
+        _Ypid.derivitiveGain = dTerm;
         
-        _Zpid.proportionalGain = pTerm;
-        _Zpid.integralGain = iTerm;
-        _Zpid.derivitiveGain = dTerm;
     }
 
     private void FixedUpdate() {
@@ -124,6 +120,13 @@ public class ShipController : MonoBehaviour {
         
     }
 
+    private void rotateSails() {
+        // TODO add pid controller to set target to rotate to
+        // Multiplying by 40 as a hack because I thought turn was too low. //TODO make setting
+        rb.AddTorque(Vector3.up * (sails * 40 * speedFactor * Time.deltaTime), ForceMode.Force);
+
+    }
+    
     private void applyTargetTorque() {
         // TODO make another pid to control torque
     }
@@ -149,28 +152,6 @@ public class ShipController : MonoBehaviour {
         }
     }
 
-    private void rotateSails() {
-        // Multiplying by 40 as a hack because I thought turn was too low. //TODO make setting
-        rb.AddTorque(Vector3.up * (sails * 40 * speedFactor * Time.deltaTime), ForceMode.Force);
-        
-        // Quaternion deltaRotation = Quaternion.Euler(Vector3.up * (sails * 40 * Time.deltaTime));
-        // rb.MoveRotation(rb.rotation * deltaRotation);
-        // // TODO try moveRotation
-    }
-
-    private void keepUpright() {
-        float currentXrot = transform.eulerAngles.x;
-        float currentZrot = transform.eulerAngles.z;
-        var targetRot = 0f;
-
-
-        float inputX = _Xpid.UpdateAngle(Time.deltaTime, currentXrot, 0f);
-        float inputZ = _Zpid.UpdateAngle(Time.deltaTime, currentZrot, 0f);
-        
-        rb.AddTorque(transform.forward * (10 * inputX * Time.deltaTime), ForceMode.Force);
-        rb.AddTorque(transform.up * (10 * inputZ * Time.deltaTime), ForceMode.Force);
-        
-    }
 
     private void updateTargetAltitue() {
         var shipPosition = transform.position;
