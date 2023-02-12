@@ -70,14 +70,12 @@ public class ShipController : MonoBehaviour {
 
     public Vector3 targetAltitude { get; private set; }
 
-    private PIDController _pid = new PIDController();
-    private PIDAngleController _Ypid = new PIDAngleController();
+    private PIDController _pid = new();
 
     private void Start() {
         rb = GetComponent<Rigidbody>();
         targetAltitude = transform.position;
         
-        // Hide that mouse, nobody want to see that shit, put it away you nasty bitch
         Cursor.lockState = CursorLockMode.Locked;
     }
 
@@ -94,10 +92,6 @@ public class ShipController : MonoBehaviour {
         _pid.proportionalGain = pTerm;
         _pid.integralGain = iTerm;
         _pid.derivitiveGain = dTerm;
-        
-        _Ypid.proportionalGain = pTerm;
-        _Ypid.integralGain = iTerm;
-        _Ypid.derivitiveGain = dTerm;
         
     }
 
@@ -163,43 +157,6 @@ public class ShipController : MonoBehaviour {
             );
     }
 
-
-
-    //------------------------------------
-    // Gizmo stuff
-    //------------------------------------
-    
-    
-    // [Header("Dev")]
-    // [SerializeField]
-    // // Test for gizmo, remove
-    // private BoxCollider shipFloorCollider;
-    // [SerializeField]
-    // // Test for gizmo, remove
-    // private bool _gizmoEnabled = false;
-    //
-    // private void OnDrawGizmos()
-    // {
-    //     if (_gizmoEnabled) {
-    //         Gizmos.color = Color.red;
-    //         Gizmos.DrawSphere(targetAltitude, 1f);    
-    //     }
-    // }
-    //
-    // private void setAltitudeGizmoInitialPos() {
-    //     if (_gizmoEnabled) {
-    //         var col = shipFloorCollider;
-    //
-    //         Debug.Log(col.size.x);
-    //         Debug.Log(col.size.z);
-    //
-    //         targetAltitude = new Vector3(
-    //             transform.position.x - col.size.x / 2, 0, transform.position.z - col.size.z / 2
-    //         );
-    //     }
-    // }
-    
-    
     [SerializeField] private float _uprightStrength = 10f;
     [SerializeField] private float _uprightStrengthDamper = 0.5f;
 

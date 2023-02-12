@@ -97,8 +97,8 @@ public class PhysicsFPSController : MonoBehaviour
         var move = _input.move * speed;
         var p = playerRB.gameObject.transform.position;
 
-        var newX = transform.right * move.x;
-        var newY = transform.forward * move.y;
+        // var newX = transform.right * move.x;
+        // var newY = transform.forward * move.y;
     
         var newPos = transform.right * move.x + transform.forward * move.y;
 
